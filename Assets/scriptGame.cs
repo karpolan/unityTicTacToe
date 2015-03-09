@@ -51,21 +51,20 @@ public class scriptGame : MonoBehaviour
             Debug.Log(string.Format("Cell size is {0}x{1} offsets are: {2}, {3}", cellWidth, cellHeight, cellSpaceX, cellSpaceY));
         }
 
-
         // Set all variables to default
         gameReset();
     } // void Start()
 
 
     //--------------------------------------------------------------------------
-    // Initialization
+    // Update everything
     void Update()
     {
         if (isGameOver) return; // Do nothing if game is stopped
 
         if (turn == -1) turnByAI(turn); // AI for "o" player
 
-        //        if (turn == 1) turnByAI(turn); // AI for "x" player    
+        //if (turn == 1) turnByAI(turn); // AI for "x" player    
     }
 
 
@@ -107,7 +106,6 @@ public class scriptGame : MonoBehaviour
 
         } // for (int i = 0; i < cells.Length; i++)
 
-
         // Draw "Indicator" text and image
         gameUpdateIndicator();
     } // void OnGUI()
@@ -141,16 +139,16 @@ public class scriptGame : MonoBehaviour
     // Called when there is no turn, some player wins, or critical error occurs 
     void gameStop(int theTurn)
     {
-        if (Debug.isDebugBuild)
-        {
-            Debug.Log(string.Format("Call of gameStop({0}) complete", theTurn));
-        }
-
         if (Math.Abs(theTurn) == 1) turn = theTurn; // Override global value if parameter is set
 
         isGameOver = true;      // Gaming is disabled
         gameUpdateGameOver();
         gameUpdateIndicator();
+
+        if (Debug.isDebugBuild)
+        {
+            Debug.Log(string.Format("Call of gameStop({0}) complete", theTurn));
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -197,6 +195,7 @@ public class scriptGame : MonoBehaviour
     } // void gameUpdateIndicator()
 
     //--------------------------------------------------------------------------
+    // Returns true if there is some winning line
 
     bool gameIsThereWinner()
     {
@@ -209,7 +208,8 @@ public class scriptGame : MonoBehaviour
     }
 
     //--------------------------------------------------------------------------
-    //
+    // Called when game is over to get winner and winning lines
+
     void gameUpdateGameOver()
     {
         if (!isGameOver) return;
@@ -294,10 +294,10 @@ public class scriptGame : MonoBehaviour
 
         cells[index] = value;   // Should be the single place of entire program where cells[] value is changed 
 
-        if (Debug.isDebugBuild)
-        {
-            Debug.Log(string.Format("Call of setCellValue({0}, {1}) complete", index, value));
-        }
+        //if (Debug.isDebugBuild)
+        //{
+        //    Debug.Log(string.Format("Call of setCellValue({0}, {1}) complete", index, value));
+        //}
 
         return true;
     }
@@ -315,8 +315,7 @@ public class scriptGame : MonoBehaviour
     }
 
     //--------------------------------------------------------------------------
-    // Calculates sum of 3 cells by its' indexes. Used to verify winning cells and to make good turn. 
-    // Indexes must be valid!
+    // Calculates sum of 3 cells by its' indexes. Used to verify winning cells and to make good turn. Indexes must be valid!
     int cellSumOf3(int a, int b, int c)
     {
         return cells[a] + cells[b] + cells[c];
@@ -398,6 +397,11 @@ public class scriptGame : MonoBehaviour
         int randomIndex = rnd.Next(0, emptyCellsCount);
         cellSetValue(emptyCells[randomIndex], theTurn);
 
+        if (Debug.isDebugBuild)
+        {
+            Debug.Log(string.Format("We made random turn at {0} cell", emptyCells[randomIndex]));
+        }
+
         return true;
     }
 
@@ -408,6 +412,12 @@ public class scriptGame : MonoBehaviour
         if (cells[4] != 0) return false; // Center cell is already taken
 
         cellSetValue(4, theTurn);
+
+        if (Debug.isDebugBuild)
+        {
+            Debug.Log(string.Format("We took center cell"));
+        }
+
         return true;
     }
 
@@ -435,6 +445,11 @@ public class scriptGame : MonoBehaviour
         int randomIndex = rnd.Next(0, emptyCellsCount);
         cellSetValue(emptyCells[randomIndex], theTurn);
 
+        if (Debug.isDebugBuild)
+        {
+            Debug.Log(string.Format("We found empty corner at {0} cell", emptyCells[randomIndex]));
+        }
+
         return true;
     }
 
@@ -442,10 +457,35 @@ public class scriptGame : MonoBehaviour
     // Blocks possible winning turn for opposite player 
     bool turnBlock(int theTurn = 0)
     {
-        // Todo: make defense turn to block line with 2 in row
-        return turnWin(theTurn); // !!! Temporary !!!
+        if (theTurn == 0) theTurn = turn; // Use global variable if parameter is not set
 
-        return true;
+        int lookFor = -2;
+        if (theTurn < 0) lookFor = 2;
+
+        for (int i = 0; i < sums.Length; i++)
+            if (sums[i] == lookFor) // Opposite player can win on this line
+            {
+                int a, b, c;
+                cellBySum(i, out a, out b, out c);
+
+                // Search for empty cell in line ant take it
+                if (cells[a] == 0) cellSetValue(a, theTurn); else
+                if (cells[b] == 0) cellSetValue(b, theTurn); else
+                if (cells[c] == 0) cellSetValue(c, theTurn); else 
+                { 
+                    Debug.Log(string.Format("We found blocking line ({0}, {1}, {2}) but cannot make defense move!", a, b, c));
+                    continue; // Something wrong with this line :(
+                }
+
+                if (Debug.isDebugBuild)
+                {
+                    Debug.Log(string.Format("We found blocking turn in ({0}, {1}, {2}) line", a, b, c));
+                }
+
+                return true; // We made the blocking turn
+            }
+
+        return false; // There is no blocking turn
     }
 
     //--------------------------------------------------------------------------
@@ -464,25 +504,25 @@ public class scriptGame : MonoBehaviour
                 cellBySum(i, out a, out b, out c);
 
                 // We can search for empty cell here, but setting all 3 is faster and makes the same result
-                if (Debug.isDebugBuild)
-                {
-                    Debug.Log(string.Format("We found winning line ({0}, {1}, {2}) so 2 of next 3 cellSetValue() calls are fake", a, b, c));
-                }
                 cellSetValue(a, theTurn);
                 cellSetValue(b, theTurn);
-                cellSetValue(c, theTurn); 
+                cellSetValue(c, theTurn);
+
+                if (Debug.isDebugBuild)
+                {
+                    Debug.Log(string.Format("We found winning turn in line ({0}, {1}, {2})", a, b, c));
+                }
 
                 return true; // We made the winning turn
             }
 
-        return false; // There is no winnig turn
+        return false; // There is no winning turn
     }
-
 
     //--------------------------------------------------------------------------
     // Performs computer turn depending on current level of AI
 
-    private int levelAI = 4; // 0 - no AI (manual play), from 1 to 5  - easy to hard AI
+    private int levelAI = 5; // 0 - no AI (manual play), from 1 to 5  - easy to hard AI
 
     void turnByAI(int theTurn = 0)
     {
