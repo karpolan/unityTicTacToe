@@ -21,7 +21,7 @@ public class scriptGame : MonoBehaviour
     private int cellWidth;          // Width of cell, taken from cells
     private int cellHeight;         // Height of cell, taken from cells
     private int cellSpaceX;         // Space between cells and horizontal offset depending on width of background and cells
-    private int cellSpaceY;         // Space between cells and horizontal offset depending on height of background and cells
+    private int cellSpaceY;         // Space between cells and vertical offset depending on height of background and cells
 
     private const int boardLeft = 0;    // X coordinate for board of cells 
     private const int boardTop = 80;    // Y coordinate for board of cells. 
@@ -51,7 +51,7 @@ public class scriptGame : MonoBehaviour
             Debug.Log(string.Format("Cell size is {0}x{1} offsets are: {2}, {3}", cellWidth, cellHeight, cellSpaceX, cellSpaceY));
         }
 
-        // Set all variables to default
+        // Set all values to default
         gameReset();
     } // void Start()
 
@@ -338,7 +338,7 @@ public class scriptGame : MonoBehaviour
                 mapCellToSum[i, 2]
             );
         }
-        /*
+        /* Variant without the loop
                 sums[0] = cellSumOf3(0, 1, 2);
                 sums[1] = cellSumOf3(3, 4, 5);
                 sums[2] = cellSumOf3(6, 7, 8);
