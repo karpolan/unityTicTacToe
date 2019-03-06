@@ -1,8 +1,15 @@
 fileFormatVersion: 2
-guid: fcb97e965f7522e40bcf1875aa89549d
+guid: 8ef7abd01ad03574ea2f794b7a865ba7
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - background: {fileID: 2800000, guid: b18ef50b19f357d4fa02183ca107493e, type: 3}
+  - cell: {fileID: 2800000, guid: 74ba187dc8c2ef64eb7a8ff92a541cdc, type: 3}
+  - imageIndicator: {instanceID: 0}
+  - textIndicator: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 
